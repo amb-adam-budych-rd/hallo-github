@@ -16,7 +16,7 @@ runs:
     - shell: bash
       run: |
         if git diff ${{ github.event.before }} ${{ github.event.after }} ${{ inputs.chart_path }} | grep -q 'version'; then
-          echo "::set-output name=is_chart-version_changed::true"
+          echo "::set-output name=is_chart_version_changed::true"
         else
           echo "::set-output name=is_chart_version_changed::false"
         fi
