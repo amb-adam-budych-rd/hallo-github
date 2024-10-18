@@ -9,14 +9,18 @@ inputs:
 outputs:
   is_chart_version_changed:
     description: "True if the Helm chart version has changed, otherwise false"
+    value: ${{ steps.check-changed.outputs.is_chart_version_changed }}
 
 runs:
   using: "composite"
   steps:
     - shell: bash
+      id: check-changed
       run: |
         if git diff ${{ github.event.before }} ${{ github.event.after }} ${{ inputs.chart_path }} | grep -q 'version'; then
-          echo "::set-output name=is_chart_version_changed::true"
+#          echo "::set-output name=is_chart_version_changed::true"
+          echo "is_chart_version_changed=true" >> $GITHUB_OUTPUT
         else
-          echo "::set-output name=is_chart_version_changed::false"
+#          echo "::set-output name=is_chart_version_changed::false"
+          echo "is_chart_version_changed=false" >> $GITHUB_OUTPUT
         fi
