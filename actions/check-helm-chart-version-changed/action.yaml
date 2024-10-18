@@ -3,23 +3,23 @@ description: "Check if the Helm chart version in Chart.yaml has changed"
 
 inputs:
   chart_path:
-    description: "The path to the Helm chart's Chart.yaml file."
+    description: "The path to the Helm chart's Chart.yaml file"
     required: true
 
 outputs:
-  is_chart_version_changed:
+  chart_version_changed:
     description: "True if the Helm chart version has changed, otherwise false"
-    value: ${{ steps.check-changed.outputs.is_chart_version_changed }}
+    value: ${{ steps.check-chart-changes.outputs.chart_version_changed }}
 
 runs:
   using: "composite"
   steps:
     - name: Check is version changed
       shell: bash
-      id: check-changed
+      id: check-chart-changes
       run: |
         if git diff ${{ github.event.before }} ${{ github.event.after }} ${{ inputs.chart_path }} | grep -q 'version'; then
-          echo "is_chart_version_changed=true" >> $GITHUB_OUTPUT
+          echo "chart_version_changed=true" >> $GITHUB_OUTPUT
         else
-          echo "is_chart_version_changed=false" >> $GITHUB_OUTPUT
+          echo "chart_version_changed=false" >> $GITHUB_OUTPUT
         fi
