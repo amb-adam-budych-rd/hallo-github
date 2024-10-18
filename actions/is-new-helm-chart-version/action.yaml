@@ -1,0 +1,21 @@
+name: "Check is Helm Chart Version Changed"
+description: "Check if the Helm chart version in Chart.yaml has changed"
+
+inputs:
+  chart_path:
+    description: "The path to the Helm chart's Chart.yaml file."
+    required: true
+
+outputs:
+  is_chart_version_changed:
+    description: "True if the Helm chart version has changed, otherwise false"
+
+runs:
+  using: "bash"
+  steps:
+    - run: |
+        if git diff ${{ github.event.before }} ${{ github.event.after }} ${{ inputs.chart_path }} | grep -q 'version'; then
+          echo "::set-output name=is_chart-version_changed::true"
+        else
+          echo "::set-output name=is_chart_version_changed::false"
+        fi
