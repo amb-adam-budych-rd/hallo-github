@@ -11,9 +11,9 @@ outputs:
     description: "True if the Helm chart version has changed, otherwise false"
 
 runs:
-  shell: bash
   steps:
-    - run: |
+    - shell: bash
+      run: |
         if git diff ${{ github.event.before }} ${{ github.event.after }} ${{ inputs.chart_path }} | grep -q 'version'; then
           echo "::set-output name=is_chart-version_changed::true"
         else
