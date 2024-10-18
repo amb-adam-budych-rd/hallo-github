@@ -18,7 +18,7 @@ runs:
       shell: bash
       id: check-chart-changes
       run: |
-        if git diff ${{ github.event.before }} ${{ github.event.after }} ${{ inputs.chart_path }} | grep -q 'version'; then
+        if git diff ${{ github.event.before }} ${{ github.event.after }} ${{ inputs.chart_path }} | grep -q '+version:'; then
           echo "chart_version_changed=true" >> $GITHUB_OUTPUT
         else
           echo "chart_version_changed=false" >> $GITHUB_OUTPUT
