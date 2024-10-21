@@ -1,0 +1,47 @@
+name: "Build & Push application docker image"
+description: "Automates the process of building a Docker image for your application, logging into a Docker registry, and pushing the image to the registry"
+
+inputs:
+  registry_url:
+    description: "Docker registry url (e.g. 'registry1.azurecr.io')"
+    required: true
+  client_id:
+    description: "Client ID to Helm registry"
+    required: true
+  client_secret:
+    description: "Client secret to Helm registry"
+    required: true
+  dockerfile_path:
+    description: "The path to the Dockerfile"
+    required: true
+  application_name:
+    description: "Application name"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Calculate version
+      id: calculate-sha
+      shell: bash
+      run: |
+        calculatedSha=$(git rev-parse --short ${{ github.sha }})
+        echo "SHA=$calculatedSha" >> $GITHUB_OUTPUT
+
+    - name: Login to ACR
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry_url }}
+        username: ${{ inputs.client_id }}
+        password: ${{ inputs.client_secret }}
+
+    - name: Build image and Push to ACR
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ${{ inputs.dockerfile_path }}
+        push: true
+        tags:
+          ${{ inputs.registry_url }}/${{ inputs.application_name }}:${{ steps.calculate-sha.outputs.SHA }}, ${{ inputs.registry_url }}/${{ inputs.application_name }}:latest
+
+

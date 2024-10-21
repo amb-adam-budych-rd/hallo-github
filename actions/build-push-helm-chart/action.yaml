@@ -1,0 +1,42 @@
+name: "Build & Push Helm chart to registry"
+description: "Build Helm chart package, login to Helm registry and push the chart to it"
+
+inputs:
+  registry_url:
+    description: "Registry url (e.g. 'registry1.azurecr.io')"
+    required: true
+  client_id:
+    description: "Client ID to Helm registry"
+    required: true
+  client_secret:
+    description: "Client secret to Helm registry"
+    required: true
+  chart_path:
+    description: "The path to the Helm chart directory"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Calculate name & version
+      id: vars
+      shell: bash
+      run: |
+        echo "CHART_NAME=$(yq -r .name ${{ inputs.chart_path }}/Chart.yaml)" >> "$GITHUB_OUTPUT"
+        echo "CHART_VERSION=$(yq -r .version ${{ inputs.chart_path }}/Chart.yaml)" >> "$GITHUB_OUTPUT"
+
+    - name: Install Helm
+      id: install
+      uses: azure/setup-helm@v4.2.0
+
+    - name: Login to Helm registry
+      shell: bash
+      run: |
+        echo ${{ inputs.client_secret }} | helm registry login ${{ inputs.registry_url }} --username ${{ inputs.client_id }} --password-stdin
+
+    - name: Package & push Helm chart
+      id: package-push
+      shell: bash
+      run: |
+        helm package ${{ inputs.chart_path }} --version ${{ steps.vars.outputs.CHART_VERSION }}
+        helm push ./${{ steps.vars.outputs.CHART_NAME }}-${{ steps.vars.outputs.CHART_VERSION }}.tgz oci://${{ inputs.registry_url }}/charts  
